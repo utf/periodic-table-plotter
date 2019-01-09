@@ -1,30 +1,35 @@
 from __future__ import division
-import os, os.path
-import yaml
 
-import numpy as np
+import os.path
+
 import matplotlib.pylab as plt
-from matplotlib.patches import Polygon
+import numpy as np
+import yaml
 from matplotlib.collections import PatchCollection
+from matplotlib.patches import Polygon
 from six import string_types
 
 INSTALL_PATH = os.path.dirname(os.path.abspath(__file__))
 
 __all__ = ['ElementDataPlotter', 'plt', 'Square']
 
-elt_data = yaml.load(open(INSTALL_PATH+'/elements.yml').read())
+elt_data = yaml.load(open(INSTALL_PATH + '/elements.yml').read())
+
 
 def atomic_number(elt):
     """Atomic number (Z)"""
     return elt['z']
 
+
 def eneg_diff(data):
     """$\Delta$ Electronegativity"""
-    d = sorted([ elt_data[elt]['electronegativity'] for elt in data['pair']])
+    d = sorted([elt_data[elt]['electronegativity'] for elt in data['pair']])
     return abs(d[0] - d[1])
+
 
 def symbol(data):
     return data['symbol']
+
 
 def get_coord_from_symbol(data):
     """Determines the cartesian coordinate of an element on the periodic
@@ -38,12 +43,13 @@ def get_coord_from_symbol(data):
         if data['z'] > 56 and data['z'] < 74:
             # is a lanthanide
             y = 9.0
-            x =  data['z'] - 54
+            x = data['z'] - 54
         elif data['z'] > 88 and data['z'] < 106:
             # is an actinide
             y = 10.0
             x = data['z'] - 86
     return x, -y
+
 
 class ElementDataPlotter(object):
     """
@@ -81,6 +87,7 @@ class ElementDataPlotter(object):
         >>> plt.show()
 
     """
+
     def __init__(self, data={}, elements=None, pair_data={}, **kwargs):
         # Add custom elemental data to existing data
         init_data = dict(elt_data)
@@ -135,7 +142,7 @@ class ElementDataPlotter(object):
         """
         self.groups = []
         if not isinstance(cmaps, (tuple, list)):
-            cmaps = [cmaps]*len(functions)
+            cmaps = [cmaps] * len(functions)
         self.cmaps = cmaps
 
         self.collections = []
@@ -154,14 +161,15 @@ class ElementDataPlotter(object):
 
     @property
     def labels(self):
-        return [ f.__doc__ for f in self.functions ]
+        return [f.__doc__ for f in self.functions]
 
     @property
     def cbar_labels(self):
-        return [ '\n'.join([self.functions[j].__doc__ for j in group ])
-                                for group in self.inv.values() ]
+        return ['\n'.join([self.functions[j].__doc__ for j in group])
+                for group in self.inv.values()]
 
     guide_square = None
+
     def create_guide_square(self, x=7, y=-1.5, labels=[], **kwargs):
         if not labels:
             labels = self.labels
@@ -171,7 +179,7 @@ class ElementDataPlotter(object):
         self.guide_square = guide_square
 
     def make_grid(self, xelts=[], yelts=[], functions=[eneg_diff],
-            cmaps='jet', draw=True, **kwargs):
+                  cmaps='jet', draw=True, **kwargs):
         """
         Plots a grid of squares colored by one or more properties for A-B
         element combinations.
@@ -186,9 +194,9 @@ class ElementDataPlotter(object):
             yelts = list(elts)
 
         for i, elt1 in enumerate(xelts):
-            self._ax.text(i+0.5, 0.25, elt1,
+            self._ax.text(i + 0.5, 0.25, elt1,
                           va='bottom', ha='center', rotation='vertical')
-            self._ax.text(i+0.5, -len(yelts) - 0.25, elt1,
+            self._ax.text(i + 0.5, -len(yelts) - 0.25, elt1,
                           va='top', ha='center', rotation='vertical')
             for j, elt2 in enumerate(yelts):
                 pair = (elt1, elt2)
@@ -197,14 +205,14 @@ class ElementDataPlotter(object):
                     data['pair'] = pair
                 if data is None:
                     continue
-                vals = [ f(data) for f in self.functions ]
+                vals = [f(data) for f in self.functions]
                 square = Square(i, -j, dy=-1., data=vals, **kwargs)
                 self.add_square(square)
 
         for j, elt2 in enumerate(yelts):
-            self._ax.text(-0.25, -j-0.5, elt2,
+            self._ax.text(-0.25, -j - 0.5, elt2,
                           va='center', ha='right')
-            self._ax.text(len(xelts) + 0.25, -j-0.5, elt2,
+            self._ax.text(len(xelts) + 0.25, -j - 0.5, elt2,
                           va='center', ha='left')
 
         self._ax.set_xticks([])
@@ -213,7 +221,8 @@ class ElementDataPlotter(object):
             self.draw(**kwargs)
         self._ax.autoscale_view()
 
-    def ptable(self, functions=[atomic_number], cmaps=None, guide=True, **kwargs):
+    def ptable(self, functions=[atomic_number], cmaps=None, guide=True,
+               **kwargs):
         """
         Create Squares in the form a periodic table.
 
@@ -267,7 +276,7 @@ class ElementDataPlotter(object):
 
         for elt, data in self._elts.items():
             x, y = get_coord_from_symbol(elt)
-            values = [ f(data) for f in self.functions ]
+            values = [f(data) for f in self.functions]
             elt_label = elt if kwargs.get('elem_labels', True) else None
             square = Square(x, y, label=elt_label, data=values, **kwargs)
             self.add_square(square)
@@ -299,14 +308,14 @@ class ElementDataPlotter(object):
                 self.collections, self.cmaps, self.cbar_labels, colorbars):
             patch_collection_kwargs = kwargs.get('patch_options', {})
             pc = PatchCollection(coll, cmap=cmap, **patch_collection_kwargs)
-            pc.set_array(np.array([ p.value for p in coll ]))
+            pc.set_array(np.array([p.value for p in coll]))
             self._ax.add_collection(pc)
 
             if colorbar:
                 options = {
-                        'orientation':'horizontal',
-                        'pad':0.05, 'aspect':60
-                        }
+                    'orientation': 'horizontal',
+                    'pad': 0.05, 'aspect': 60
+                }
 
                 options.update(kwargs.get('colorbar_options', {}))
                 cbar = plt.colorbar(pc, **options)
@@ -314,15 +323,15 @@ class ElementDataPlotter(object):
                 self.cbars.append(cbar)
 
         # Add label to center of square
-        fontdict = kwargs.get('font', {'color':'white'})
+        fontdict = kwargs.get('font', {'color': 'white'})
         for s in self.squares:
             if not s.label:
                 continue
-            x = s.x + s.dx/2
-            y = s.y + s.dy/2
+            x = s.x + s.dx / 2
+            y = s.y + s.dy / 2
             self._ax.text(x, y, s.label, ha='center',
-                                         va='center',
-                                         fontdict=fontdict)
+                          va='center',
+                          fontdict=fontdict)
 
         # Plot the guide square
         if self.guide_square:
@@ -336,7 +345,7 @@ class ElementDataPlotter(object):
         self.draw(**kwargs)
 
     def pettifor(self, xaxis=atomic_number, yaxis=atomic_number,
-            label=symbol):
+                 label=symbol):
         """
         Create a pettifor map with the specified x- and y-axes.
 
@@ -360,7 +369,7 @@ class ElementDataPlotter(object):
             >>> plt.show()
 
         """
-        x, y = [],[]
+        x, y = [], []
         for elt, data in self._elts.items():
             xx = xaxis(data)
             yy = yaxis(data)
@@ -372,9 +381,10 @@ class ElementDataPlotter(object):
         self._ax.set_xlabel(xaxis.__doc__)
         self._ax.set_ylabel(yaxis.__doc__)
 
+
 class Square(object):
     def __init__(self, x, y, label=None, data=[], dx=1., dy=1., **kwargs):
-        self.x, self.y = x,y
+        self.x, self.y = x, y
         self.dx, self.dy = dx, dy
         self.label = label
         self.data = data
@@ -427,14 +437,14 @@ class Square(object):
         +------------+
 
         """
-        x1, x2 = self.x, self.x+self.dx
-        y1, y2 = self.y, self.y+self.dy
+        x1, x2 = self.x, self.x + self.dx
+        y1, y2 = self.y, self.y + self.dy
         patch = Polygon([
-            [x1, y1], # origin
-            [x2, y1], # to bottom right
-            [x2, y2], # to top right
-            [x1, y2], # to top left
-            [x1, y1]])# to origin
+            [x1, y1],  # origin
+            [x2, y1],  # to bottom right
+            [x2, y2],  # to top right
+            [x1, y2],  # to top left
+            [x1, y1]])  # to origin
         self.patches = [patch]
 
     def single_label(self, label, position="top", **kwargs):
@@ -454,24 +464,24 @@ class Square(object):
         """
         assert isinstance(label, string_types)
         if position == 'top':
-            x = self.x + self.dx/2
-            y = self.y + self.dy*1.25
+            x = self.x + self.dx / 2
+            y = self.y + self.dy * 1.25
             ha, va = 'center', 'bottom'
         elif position == 'bottom':
-            x = self.x + self.dx/2
-            y = self.y - self.dy*0.25
+            x = self.x + self.dx / 2
+            y = self.y - self.dy * 0.25
             ha, va = 'center', 'top'
         elif position == 'left':
-            x = self.x - self.dx*0.25
-            y = self.y + self.y/2
+            x = self.x - self.dx * 0.25
+            y = self.y + self.y / 2
             ha, va = 'right', 'center'
         elif position == 'right':
-            x = self.x + self.dx*1.25
-            y = self.y + self.y/2
+            x = self.x + self.dx * 1.25
+            y = self.y + self.y / 2
             ha, va = 'left', 'center'
         else:
             raise ValueError("`position` must be one of:"
-                    "'top', 'bottom', 'left', 'right'")
+                             "'top', 'bottom', 'left', 'right'")
         fontdict = kwargs.get('fontdict', {})
         plt.text(x, y, label, ha=ha, va=va, fontdict=fontdict)
 
@@ -490,20 +500,20 @@ class Square(object):
         +-------------+
 
         """
-        x1, x2 = self.x, self.x+self.dx
-        y1, y2 = self.y, self.y+self.dy
+        x1, x2 = self.x, self.x + self.dx
+        y1, y2 = self.y, self.y + self.dy
 
         top = Polygon([
-            [x1, y1], # origin
-            [x1, y2], # to top left
-            [x2, y1], # to bottom right
-            [x1, y1]]) # back to origin
+            [x1, y1],  # origin
+            [x1, y2],  # to top left
+            [x2, y1],  # to bottom right
+            [x1, y1]])  # back to origin
 
         bot = Polygon([
-            [x2, y2], # top right
-            [x1, y2], # to top left
-            [x2, y1], # to bottom right
-            [x2, y2]]) # back to top right
+            [x2, y2],  # top right
+            [x1, y2],  # to top left
+            [x2, y1],  # to bottom right
+            [x2, y2]])  # back to top right
 
         self.patches = [top, bot]
 
@@ -525,20 +535,20 @@ class Square(object):
         """
         assert len(labels) == 2
         if position == 'horizontal':
-            x1 = self.x - self.dx*0.25
-            x2 = self.x + self.dx*1.25
-            y1 = y2 = self.y + self.dy/2
+            x1 = self.x - self.dx * 0.25
+            x2 = self.x + self.dx * 1.25
+            y1 = y2 = self.y + self.dy / 2
             ha1, ha2 = 'right', 'left'
             va1 = va2 = 'center'
         elif position == 'vertical':
-            x1 = x2 = self.x + self.dx/2
-            y1 = self.y + self.dy*1.25
-            y2 = self.y - self.dy*0.25
+            x1 = x2 = self.x + self.dx / 2
+            y1 = self.y + self.dy * 1.25
+            y2 = self.y - self.dy * 0.25
             ha1 = ha2 = 'center'
             va1, va2 = 'bottom', 'top'
         else:
             raise ValueError("`position` must be one of:"
-                    "'horizontal', 'vertical'")
+                             "'horizontal', 'vertical'")
         fontdict = kwargs.get('fontdict', {})
         plt.text(x1, y1, labels[0], ha=ha1, va=va1, fontdict=fontdict)
         plt.text(x2, y2, labels[1], ha=ha2, va=va2, fontdict=fontdict)
@@ -558,30 +568,30 @@ class Square(object):
         +-----------+
 
         """
-        x1, x2 = self.x, self.x+self.dx
-        x3 = self.x + self.dx*0.5
-        y1, y2 = self.y, self.y+self.dy
-        y3 = self.y + self.dy*0.666
+        x1, x2 = self.x, self.x + self.dx
+        x3 = self.x + self.dx * 0.5
+        y1, y2 = self.y, self.y + self.dy
+        y3 = self.y + self.dy * 0.666
 
         left = Polygon([
-            [x3, y3], # center
-            [x1, y1], # to bottom left
-            [x1, y2], # to top left
-            [x3, y2], # to top middle
-            [x3, y3]])# back to center
+            [x3, y3],  # center
+            [x1, y1],  # to bottom left
+            [x1, y2],  # to top left
+            [x3, y2],  # to top middle
+            [x3, y3]])  # back to center
 
         right = Polygon([
-            [x3, y3], # center
-            [x2, y1], # to bottom right
-            [x2, y2], # to top right
-            [x3, y2], # to top middle
-            [x3, y3]])# back to center
+            [x3, y3],  # center
+            [x2, y1],  # to bottom right
+            [x2, y2],  # to top right
+            [x3, y2],  # to top middle
+            [x3, y3]])  # back to center
 
         bot = Polygon([
-            [x3, y3], # center
-            [x1, y1], # to bottom left
-            [x2, y1], # to bottom right
-            [x3, y3]])# back to center
+            [x3, y3],  # center
+            [x1, y1],  # to bottom left
+            [x2, y1],  # to bottom right
+            [x3, y3]])  # back to center
         self.patches = [left, right, bot]
 
     def triple_label(self, labels, **kwargs):
@@ -601,11 +611,11 @@ class Square(object):
 
         """
         assert len(labels) == 3
-        x1 = self.x - self.dx*0.25
-        x2 = self.x + self.dx*1.25
-        x3 = self.x + self.dx/2
-        y1 = y2 = self.y + self.dy*0.75
-        y3 = self.y - self.dy*0.25
+        x1 = self.x - self.dx * 0.25
+        x2 = self.x + self.dx * 1.25
+        x3 = self.x + self.dx / 2
+        y1 = y2 = self.y + self.dy * 0.75
+        y3 = self.y - self.dy * 0.25
         fontdict = kwargs.get('fontdict', {})
         plt.text(x1, y1, labels[0], ha='right', fontdict=fontdict)
         plt.text(x2, y2, labels[1], ha='left', fontdict=fontdict)
@@ -626,35 +636,35 @@ class Square(object):
         +------+-----+
 
         """
-        x1, x2 = self.x, self.x+self.dx
-        y1, y2 = self.y, self.y+self.dy
-        x3 = (x1+x2)/2
-        y3 = (y1+y2)/2
+        x1, x2 = self.x, self.x + self.dx
+        y1, y2 = self.y, self.y + self.dy
+        x3 = (x1 + x2) / 2
+        y3 = (y1 + y2) / 2
 
         bl = Polygon([
-            [x3, y3], # center
-            [x3, y1], # to middle bottom
-            [x1, y1], # to bottom left
-            [x1, y3], # to middle left
-            [x3, y3]])# back to center
+            [x3, y3],  # center
+            [x3, y1],  # to middle bottom
+            [x1, y1],  # to bottom left
+            [x1, y3],  # to middle left
+            [x3, y3]])  # back to center
         tl = Polygon([
-            [x3, y3], # center
-            [x3, y2], # to middle top
-            [x1, y2], # to top left
-            [x1, y3], # to middle left
-            [x3, y3]])# back to center
+            [x3, y3],  # center
+            [x3, y2],  # to middle top
+            [x1, y2],  # to top left
+            [x1, y3],  # to middle left
+            [x3, y3]])  # back to center
         tr = Polygon([
-            [x3, y3], # center
-            [x3, y2], # to middle top
-            [x2, y2], # to top right
-            [x2, y3], # to middle right
-            [x3, y3]])# back to center
+            [x3, y3],  # center
+            [x3, y2],  # to middle top
+            [x2, y2],  # to top right
+            [x2, y3],  # to middle right
+            [x3, y3]])  # back to center
         br = Polygon([
-            [x3, y3], # center
-            [x3, y1], # to middle bottom
-            [x2, y1], # to bottom right
-            [x2, y3], # to middle right
-            [x3, y3]])# back to center
+            [x3, y3],  # center
+            [x3, y1],  # to middle bottom
+            [x2, y1],  # to bottom right
+            [x2, y3],  # to middle right
+            [x3, y3]])  # back to center
 
         self.patches = [tl, tr, br, bl]
 
@@ -674,10 +684,10 @@ class Square(object):
 
         """
         assert len(labels) == 4
-        x1 = x4 = self.x - self.dx*0.25
-        x2 = x3 = self.x + self.dx*1.25
-        y1 = y2 = self.y + self.dy*0.75
-        y3 = y4 = self.y + self.dy*0.25
+        x1 = x4 = self.x - self.dx * 0.25
+        x2 = x3 = self.x + self.dx * 1.25
+        y1 = y2 = self.y + self.dy * 0.75
+        y3 = y4 = self.y + self.dy * 0.25
         ha1 = ha4 = 'right'
         ha2 = ha3 = 'left'
         va = 'center'
