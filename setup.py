@@ -8,9 +8,6 @@ setup(
     packages=find_packages(),
     url='http://pypi.python.org/pypi/periodic-table-plotter',
     license='LICENSE',
-    package_data = {'': ['*.yml', '*.md']},
-    install_requires=[
-        'numpy',
-        'matplotlib'
-    ],
+    package_data={'': ['*.yml', '*.md']},
+    install_requires=['numpy', 'matplotlib', 'six'],
 )
