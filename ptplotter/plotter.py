@@ -36,7 +36,7 @@ def get_coord_from_symbol(data):
 
     if x == 0:
         if data['z'] > 56 and data['z'] < 74:
-            # is a lanthanide 
+            # is a lanthanide
             y = 9.0
             x =  data['z'] - 54
         elif data['z'] > 88 and data['z'] < 106:
@@ -56,7 +56,7 @@ class ElementDataPlotter(object):
     ..Notes::
         The following variables are available (and correspond to an appropriate
         value) in any function you write:
-        
+
         covalent_radii, scattering_factors, symbol, specific_heat,
         period, p_elec, volume, atomic_radii, f_elec, s_elec,
         electronegativity, d_elec, group, van_der_waals_radii, density,
@@ -69,13 +69,13 @@ class ElementDataPlotter(object):
 
         functions: List of generating functions
         cmaps: List of matplotlib cmaps
-        cmap_groups: 
+        cmap_groups:
             If multiple functions are assigned to the same cmap, they
-            are grouped here. 
+            are grouped here.
         labels: List of data labels
 
     Examples::
-        
+
         >>> epd = ElementDataPlotter()
         >>> epd.ptable([func1, func2, func3])
         >>> plt.show()
@@ -93,7 +93,7 @@ class ElementDataPlotter(object):
             elts[elt] = init_data[elt]
             if elt in data:
                 elts[elt].update(data[elt])
-        
+
         self._pairs = pair_data
         self._elts = elts
 
@@ -114,14 +114,14 @@ class ElementDataPlotter(object):
     def add_square(self, square):
         """
         Add square to list of squares being plotted
-        
+
         Input:
             square - Square, square to be plotted
         """
-        
+
         # Add to internal list of squares
         self.squares.append(square)
-        
+
         # Add each of the individual patches that make up the
         #  square to the collection corresponding to that group
         for ind, patch in zip(self.groups, square.patches):
@@ -151,16 +151,16 @@ class ElementDataPlotter(object):
         self.inv = {}
         for i, j in enumerate(self.groups):
             self.inv[j] = self.inv.get(j, []) + [i]
-            
+
     @property
     def labels(self):
         return [ f.__doc__ for f in self.functions ]
 
     @property
     def cbar_labels(self):
-        return [ '\n'.join([self.functions[j].__doc__ for j in group ]) 
+        return [ '\n'.join([self.functions[j].__doc__ for j in group ])
                                 for group in self.inv.values() ]
-    
+
     guide_square = None
     def create_guide_square(self, x=7, y=-1.5, labels=[], **kwargs):
         if not labels:
@@ -173,8 +173,8 @@ class ElementDataPlotter(object):
     def make_grid(self, xelts=[], yelts=[], functions=[eneg_diff],
             cmaps='jet', draw=True, **kwargs):
         """
-        Plots a grid of squares colored by one or more properties for A-B 
-        element combinations. 
+        Plots a grid of squares colored by one or more properties for A-B
+        element combinations.
         """
         self.set_functions(functions, cmaps=cmaps)
 
@@ -186,9 +186,9 @@ class ElementDataPlotter(object):
             yelts = list(elts)
 
         for i, elt1 in enumerate(xelts):
-            self._ax.text(i+0.5, 0.25, elt1, 
+            self._ax.text(i+0.5, 0.25, elt1,
                           va='bottom', ha='center', rotation='vertical')
-            self._ax.text(i+0.5, -len(yelts) - 0.25, elt1, 
+            self._ax.text(i+0.5, -len(yelts) - 0.25, elt1,
                           va='top', ha='center', rotation='vertical')
             for j, elt2 in enumerate(yelts):
                 pair = (elt1, elt2)
@@ -202,9 +202,9 @@ class ElementDataPlotter(object):
                 self.add_square(square)
 
         for j, elt2 in enumerate(yelts):
-            self._ax.text(-0.25, -j-0.5, elt2, 
+            self._ax.text(-0.25, -j-0.5, elt2,
                           va='center', ha='right')
-            self._ax.text(len(xelts) + 0.25, -j-0.5, elt2, 
+            self._ax.text(len(xelts) + 0.25, -j-0.5, elt2,
                           va='center', ha='left')
 
         self._ax.set_xticks([])
@@ -216,35 +216,35 @@ class ElementDataPlotter(object):
     def ptable(self, functions=[atomic_number], cmaps=None, guide=True, **kwargs):
         """
         Create Squares in the form a periodic table.
-        
+
         Input:
             functions - list, Functions that define the value used to determine
-                the color of each element. 
-                
+                the color of each element.
+
                 Functions should take a dictionary that contains the properties
                 of elements (ex: elt['z'] is the atomic number) and returns
                 a color value as the output. The documentation string for the function
-                is used as the label for the guide square. 
-                
+                is used as the label for the guide square.
+
                 Example:
                 def color_function(elt):
                     ''' Atomic Mass '''
                     return elt.get['atomic_mass']
-                    
+
             cmaps - list, List of colormaps for each property being plotted
-            
+
             guide - boolean, Whether to plot guide square
-        
+
         Kwargs:
             colorbars - boolean, Whether to print colorbars
             colorbar_options - dict, Containing settings specific for the colorbars
             font - dict, Containing information about the font for element labels
             elem_labels - boolean, Whether to plot names of elements (default = True)
-        
+
         Examples::
-        
+
             >>> epd = ElementDataPlotter()
-            >>> # Just provide a list of functions 
+            >>> # Just provide a list of functions
             >>> epd.ptable([func1, func2, func3])
             >>> plt.show()
             >>> # Provide a cmap name to pick the color scheme
@@ -278,25 +278,31 @@ class ElementDataPlotter(object):
     def draw(self, colorbars=True, **kwargs):
         """
         Color squares on plot appropriately, and place color bar
-        
+
         Input:
             colorbars - boolean, Whether to print colorbars on figure
-        
+
         Kwargs:
             font - dict, Containing information about the font for element labels
             colorbars - boolean, Whether to print colorbars
             colorbar-options - dict, Containing settings specific for the colorbars
+            patch_options – dict, Containing specific settings for the patches.
         """
-        
+
         # Plot each set of patches making up the squares, which correspond
         #  to the different properties being plotted
         self.cbars = []
-        for coll, cmap, label in zip(self.collections, self.cmaps, self.cbar_labels):
-            pc = PatchCollection(coll, cmap=cmap)
+        if not isinstance(colorbars, list):
+            colorbars = [colorbars] * len(self.collections)
+
+        for coll, cmap, label, colorbar in zip(
+                self.collections, self.cmaps, self.cbar_labels, colorbars):
+            patch_collection_kwargs = kwargs.get('patch_options', {})
+            pc = PatchCollection(coll, cmap=cmap, **patch_collection_kwargs)
             pc.set_array(np.array([ p.value for p in coll ]))
             self._ax.add_collection(pc)
 
-            if colorbars:
+            if colorbar:
                 options = {
                         'orientation':'horizontal',
                         'pad':0.05, 'aspect':60
@@ -314,8 +320,8 @@ class ElementDataPlotter(object):
                 continue
             x = s.x + s.dx/2
             y = s.y + s.dy/2
-            self._ax.text(x, y, s.label, ha='center', 
-                                         va='center', 
+            self._ax.text(x, y, s.label, ha='center',
+                                         va='center',
                                          fontdict=fontdict)
 
         # Plot the guide square
@@ -324,7 +330,7 @@ class ElementDataPlotter(object):
             pc = PatchCollection(self.guide_square.patches, match_original=True)
             self._ax.add_collection(pc)
         self._ax.autoscale_view()
-    
+
     def redraw_ptable(self, **kwargs):
         self._ax.clear()
         self.draw(**kwargs)
@@ -435,7 +441,7 @@ class Square(object):
         """
         Labels a single Patch. Label position can be set with the "position"
         keyword argument as shown below:
-                
+
                    top
              +------------+
              |            |
@@ -467,7 +473,7 @@ class Square(object):
             raise ValueError("`position` must be one of:"
                     "'top', 'bottom', 'left', 'right'")
         fontdict = kwargs.get('fontdict', {})
-        plt.text(x, y, label, ha=ha, va=va, fontdict=fontdict) 
+        plt.text(x, y, label, ha=ha, va=va, fontdict=fontdict)
 
     def double_color(self, **kwargs):
         """
@@ -504,7 +510,7 @@ class Square(object):
     def double_label(self, labels, position="horizontal", **kwargs):
         """
         Plots 2 colors in a square:
-            
+
                       vertical
                    +-------------+
                    |            /|
@@ -534,8 +540,8 @@ class Square(object):
             raise ValueError("`position` must be one of:"
                     "'horizontal', 'vertical'")
         fontdict = kwargs.get('fontdict', {})
-        plt.text(x1, y1, labels[0], ha=ha1, va=va1, fontdict=fontdict) 
-        plt.text(x2, y2, labels[1], ha=ha2, va=va2, fontdict=fontdict) 
+        plt.text(x1, y1, labels[0], ha=ha1, va=va1, fontdict=fontdict)
+        plt.text(x2, y2, labels[1], ha=ha2, va=va2, fontdict=fontdict)
 
     def triple_color(self, **kwargs):
         """
